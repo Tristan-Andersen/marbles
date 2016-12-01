@@ -110,9 +110,10 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return t.Write(stub, args)
 	} else if function == "init_marble" {									//create a new marble
 		return t.init_marble(stub, args)
-	} else if function == "set_user" {										//change owner of a marble
-		res, err := t.set_user(stub, args)
-		return res, err
+	} else if function == "set_quote" {										//change owner of a marble
+		return t.set_quote(stub, args)
+	} else if function == "set_received" {										//change owner of a marble
+		return t.set_received(stub, args)
 	}
 	fmt.Println("invoke did not find func: " + function)					//error
 
@@ -274,7 +275,7 @@ func (t *SimpleChaincode) init_marble(stub shim.ChaincodeStubInterface, args []s
 // ============================================================================================================================
 // Set User Permission on Marble
 // ============================================================================================================================
-func (t *SimpleChaincode) set_user(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) set_quote(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 
 	//   0       1
@@ -283,7 +284,7 @@ func (t *SimpleChaincode) set_user(stub shim.ChaincodeStubInterface, args []stri
 		return nil, errors.New("Incorrect number of arguments. Expecting 2")
 	}
 
-	fmt.Println("- start set user")
+	fmt.Println("- start set quote")
 	fmt.Println(args[0] + " - " + args[1])
 	marbleAsBytes, err := stub.GetState(args[0])
 	if err != nil {
@@ -299,8 +300,37 @@ func (t *SimpleChaincode) set_user(stub shim.ChaincodeStubInterface, args []stri
 		return nil, err
 	}
 
-	fmt.Println("- end set user")
+	fmt.Println("- end set quote")
 	return nil, nil
+}
+
+func(t *SimpleChaincode) set_received(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+
+	//   0       1
+	// "name", "bob"
+	if len(args) < 1 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 1")
+	}
+
+	fmt.Println("- start set received")
+	fmt.Println(args[0])
+	marbleAsBytes, err := stub.GetState(args[0])
+	if err != nil {
+		return nil, errors.New("Failed to get thing")
+	}
+	res := Marble{}
+	json.Unmarshal(marbleAsBytes, &res)										//un stringify it aka JSON.parse()
+	res.DateTimeStatus = "Received"														//change the user
+
+	jsonAsBytes, _ := json.Marshal(res)
+	err = stub.PutState(args[0], jsonAsBytes)								//rewrite the marble with id as key
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("- end set received")
+	return nil, nil	
 }
 
 // ============================================================================================================================
