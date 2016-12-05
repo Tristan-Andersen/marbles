@@ -40,6 +40,7 @@ type Marble struct{
 	WorkOrder string `json:"workorder"`
 	DateTime string `json:"datetime"`
 	DateTimeStatus string `json:"datetimestatus"`
+	Email string `json:"email"`
 	Quote string `json:"quote"`
 }
 
@@ -108,12 +109,14 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return res, err
 	} else if function == "write" {											//writes a value to the chaincode state
 		return t.Write(stub, args)
-	} else if function == "init_marble" {									//create a new marble
+	} else if function == "init_repair" {									//create a new marble
 		return t.init_marble(stub, args)
 	} else if function == "set_quote" {										//change owner of a marble
 		return t.set_quote(stub, args)
 	} else if function == "set_received" {										//change owner of a marble
 		return t.set_received(stub, args)
+	} else if function == "set_email" {
+		return t.set_email(stub, args)	
 	}
 	fmt.Println("invoke did not find func: " + function)					//error
 
@@ -219,7 +222,7 @@ func (t *SimpleChaincode) Write(stub shim.ChaincodeStubInterface, args []string)
 // ============================================================================================================================
 // Init Marble - create a new marble, store into chaincode state
 // ============================================================================================================================
-func (t *SimpleChaincode) init_marble(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) init_repair(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 
 	//   0       1       2     3
@@ -233,6 +236,7 @@ func (t *SimpleChaincode) init_marble(stub shim.ChaincodeStubInterface, args []s
 	datetime := args[2]
 	datetimestatus := args[3]
 	quote := "0"
+	email := "needRepairs@needRepairs.com"
 
 	//check if marble already exists
 	marbleAsBytes, err := stub.GetState(processid)
@@ -248,7 +252,7 @@ func (t *SimpleChaincode) init_marble(stub shim.ChaincodeStubInterface, args []s
 	}
 
 	//build the marble json string manually
-	str := `{"processid": "` + processid + `", "workorder": "` + workorder + `", "datetime": "` + datetime + `", "datetimestatus": "` + datetimestatus + `", "quote": "` + quote + `"}`
+	str := `{"processid": "` + processid + `", "workorder": "` + workorder + `", "datetime": "` + datetime + `", "datetimestatus": "` + datetimestatus + `", "email": "` + email + `", "quote": "` + quote + `"}`
 	err = stub.PutState(processid, []byte(str))									//store marble with id as key
 	if err != nil {
 		return nil, err
@@ -322,6 +326,35 @@ func(t *SimpleChaincode) set_received(stub shim.ChaincodeStubInterface, args []s
 	res := Marble{}
 	json.Unmarshal(marbleAsBytes, &res)										//un stringify it aka JSON.parse()
 	res.DateTimeStatus = "Received"														//change the user
+
+	jsonAsBytes, _ := json.Marshal(res)
+	err = stub.PutState(args[0], jsonAsBytes)								//rewrite the marble with id as key
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("- end set received")
+	return nil, nil	
+}
+
+func(t *SimpleChaincode) set_email(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+
+	//   0       1
+	// "name", "bob"
+	if len(args) < 1 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 1")
+	}
+
+	fmt.Println("- start set received")
+	fmt.Println(args[0])
+	marbleAsBytes, err := stub.GetState(args[0])
+	if err != nil {
+		return nil, errors.New("Failed to get thing")
+	}
+	res := Marble{}
+	json.Unmarshal(marbleAsBytes, &res)										//un stringify it aka JSON.parse()
+	res.Email = args[1]														//change the user
 
 	jsonAsBytes, _ := json.Marshal(res)
 	err = stub.PutState(args[0], jsonAsBytes)								//rewrite the marble with id as key
