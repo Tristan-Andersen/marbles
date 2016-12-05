@@ -284,7 +284,7 @@ func (t *SimpleChaincode) set_quote(stub shim.ChaincodeStubInterface, args []str
 
 	//   0       1
 	// "name", "bob"
-	if len(args) < 3 {
+	if len(args) < 9 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 2")
 	}
 
@@ -314,7 +314,7 @@ func(t *SimpleChaincode) set_received(stub shim.ChaincodeStubInterface, args []s
 
 	//   0       1
 	// "name", "bob"
-	if len(args) < 2 {
+	if len(args) < 7 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
 
@@ -326,8 +326,8 @@ func(t *SimpleChaincode) set_received(stub shim.ChaincodeStubInterface, args []s
 	}
 	res := Marble{}
 	json.Unmarshal(marbleAsBytes, &res)										//un stringify it aka JSON.parse()
-	res.DateTimeStatus = "Received"													//change the user
-	res.Email = args[1]
+	res.DateTimeStatus = args[1]													//change the user
+	res.Email = args[2]
 
 	jsonAsBytes, _ := json.Marshal(res)
 	err = stub.PutState(args[0], jsonAsBytes)								//rewrite the marble with id as key
@@ -344,7 +344,7 @@ func(t *SimpleChaincode) set_email(stub shim.ChaincodeStubInterface, args []stri
 
 	//   0       1
 	// "name", "bob"
-	if len(args) < 1 {
+	if len(args) < 2 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
 
