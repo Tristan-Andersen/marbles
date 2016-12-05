@@ -227,7 +227,7 @@ func (t *SimpleChaincode) init_repair(stub shim.ChaincodeStubInterface, args []s
 
 	//   0       1       2     3
 	// "asdf", "blue", "35", "bob"
-	if len(args) != 4 {
+	if len(args) != 5 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 4")
 	}
 
@@ -236,7 +236,7 @@ func (t *SimpleChaincode) init_repair(stub shim.ChaincodeStubInterface, args []s
 	datetime := args[2]
 	datetimestatus := args[3]
 	quote := "0"
-	email := "needRepairs@needRepairs.com"
+	email := args[4]
 
 	//check if marble already exists
 	marbleAsBytes, err := stub.GetState(processid)
@@ -284,7 +284,7 @@ func (t *SimpleChaincode) set_quote(stub shim.ChaincodeStubInterface, args []str
 
 	//   0       1
 	// "name", "bob"
-	if len(args) < 2 {
+	if len(args) < 3 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 2")
 	}
 
@@ -297,7 +297,8 @@ func (t *SimpleChaincode) set_quote(stub shim.ChaincodeStubInterface, args []str
 	res := Marble{}
 	json.Unmarshal(marbleAsBytes, &res)										//un stringify it aka JSON.parse()
 	res.Quote = args[1]														//change the user
-
+	res.Email = args[2]
+	
 	jsonAsBytes, _ := json.Marshal(res)
 	err = stub.PutState(args[0], jsonAsBytes)								//rewrite the marble with id as key
 	if err != nil {
@@ -313,7 +314,7 @@ func(t *SimpleChaincode) set_received(stub shim.ChaincodeStubInterface, args []s
 
 	//   0       1
 	// "name", "bob"
-	if len(args) < 1 {
+	if len(args) < 2 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
 
@@ -325,7 +326,8 @@ func(t *SimpleChaincode) set_received(stub shim.ChaincodeStubInterface, args []s
 	}
 	res := Marble{}
 	json.Unmarshal(marbleAsBytes, &res)										//un stringify it aka JSON.parse()
-	res.DateTimeStatus = "Received"														//change the user
+	res.DateTimeStatus = "Received"													//change the user
+	res.Email = args[1]
 
 	jsonAsBytes, _ := json.Marshal(res)
 	err = stub.PutState(args[0], jsonAsBytes)								//rewrite the marble with id as key
