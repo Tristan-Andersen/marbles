@@ -296,8 +296,8 @@ func (t *SimpleChaincode) set_quote(stub shim.ChaincodeStubInterface, args []str
 	}
 	res := Marble{}
 	json.Unmarshal(marbleAsBytes, &res)										//un stringify it aka JSON.parse()
-	res.Quote = args[1]														//change the user
-	res.Email = args[2]
+	res.Quote = args[3]														//change the user
+	res.Email = args[6]
 	
 	jsonAsBytes, _ := json.Marshal(res)
 	err = stub.PutState(args[0], jsonAsBytes)								//rewrite the marble with id as key
@@ -326,8 +326,8 @@ func(t *SimpleChaincode) set_received(stub shim.ChaincodeStubInterface, args []s
 	}
 	res := Marble{}
 	json.Unmarshal(marbleAsBytes, &res)										//un stringify it aka JSON.parse()
-	res.DateTimeStatus = args[1]													//change the user
-	res.Email = args[2]
+	res.DateTimeStatus = args[2]													//change the user
+	res.Email = args[4]
 
 	jsonAsBytes, _ := json.Marshal(res)
 	err = stub.PutState(args[0], jsonAsBytes)								//rewrite the marble with id as key
